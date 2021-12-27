@@ -88,8 +88,8 @@ namespace StarEmpire
                     double distance = i + 5;
                     double angle = i * (2 * Math.PI) / (stars.Count + 2);
 
-                    Pos x = star.IsHomeworld ? Pos.Center() : Pos.Center() + (int)(Math.Sin(angle) * distance);
-                    Pos y = star.IsHomeworld ? Pos.Center() : Pos.Center() + (int)(Math.Cos(angle) * distance);
+                    Pos x = star.LocationX;
+                    Pos y = star.LocationY;
                     var system = new Label() { X = x, Y = y, Text = $"* {(star.IsExplored || star.IsHomeworld ? star.Name : string.Empty)}", Data = star, Width = star.Name.Length +2, Height = 1 };
                     if (star.IsHomeworld) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Green) };
                     if (star.Owner == null) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Red) };

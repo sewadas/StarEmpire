@@ -19,6 +19,10 @@ namespace StarEmpire
         public Empire Owner { get; set; }
         public bool ResourceGatheringHalted { get; set; }
 
+        public int LocationX { get; set; }
+
+        public int LocationY { get; set; }
+
         public InvasionResult Invade(Empire empire)
         {
             if (Distance == DistanceEnum.Distant && empire.OwnedTechs.Any(o => o.Name == Context.ForwardStarbases) == false) return InvasionResult.NotPossible;

@@ -3,11 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terminal.Gui;
 
 namespace StarEmpire
 {
     public static class StarSystemFactory
     {
+        public static List<IStarSystem> Build()
+        {
+            int i = 10;
+            var tmp = SystemTemplateList.ToArray().OrderBy(c => Guid.NewGuid()).ToList();
+            foreach (var star in tmp)
+            {
+                star.LocationX = new Random().Next(0, Context.ScreenWidth - star.Name.Length - 2);
+                star.LocationY = i;
+                i++;
+            }
+            return tmp;
+        }
+
         public static IStarSystem Build(Empire owner, string name, DistanceEnum distance, int resourceRate, int wealthRate, int resistance = 0, int victoryPoints = 0, bool isHomeworld = false)
         {
             var star = new StarSystem();
@@ -22,11 +36,13 @@ namespace StarEmpire
             {
                 star.IsHomeworld = isHomeworld;
                 star.IsExplored = true;
+                star.LocationX = Context.ScreenWidth / 2;
+                star.LocationY = 23;
             }
             return star;
         }
 
-        public static List<IStarSystem> SystemTemplateList = new List<IStarSystem>
+        private static List<IStarSystem> SystemTemplateList = new List<IStarSystem>
         {
             Build(null, "Wolf 359", DistanceEnum.Near, 1, 0, 5, 1),
             Build(null, "Proxima", DistanceEnum.Near, 1, 0, 6, 1),

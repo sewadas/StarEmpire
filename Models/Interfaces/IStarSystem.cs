@@ -20,6 +20,8 @@ namespace StarEmpire
         Empire Owner { get; set; }
         InvasionResult Invade(Empire empire);
         void AddResources();
+        int LocationX { get; set; }
+        int LocationY { get; set; }
 
     }
 }

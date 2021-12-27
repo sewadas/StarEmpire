@@ -19,7 +19,7 @@ namespace StarEmpire
             Player = EmpireFactory.Build(empireName, 0, 0, 0);
             StarMap = new List<IStarSystem>();
             StarMap.Add(Player.Homeworld);
-            StarMap.AddRange(StarSystemFactory.SystemTemplateList.ToArray().OrderBy(c => Guid.NewGuid()).ToList());
+            StarMap.AddRange(StarSystemFactory.Build());
             
             Incidents = new Queue<Func<Empire, string>>(IncidentFactory.IncidentTemplateList.OrderBy(c => Guid.NewGuid()).ToList());
         }
