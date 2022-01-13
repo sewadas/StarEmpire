@@ -31,6 +31,8 @@ namespace StarEmpire
             _gameController.StarMap = OnStarMapRefresh;
             _gameController.AllowMilitaryImprovement = OnMilitaryImprovement;
             _gameController.AllowTechImprovement = OnTechImprovement;
+            _gameController.AllowResourcesExchange = OnResourcesExchange;
+            _gameController.AllowWealthExchange = OnWealthExchange;
             _gameController.Techs = OnTechView;
             Height = Dim.Fill();
             Width = Dim.Fill();
@@ -74,6 +76,22 @@ namespace StarEmpire
             });
         }
 
+        public void OnResourcesExchange(bool canExchange)
+        {
+            Application.MainLoop.Invoke(() =>
+            {
+                this.improveResources.Enabled = canExchange;
+            });
+        }
+
+        public void OnWealthExchange(bool canExchange)
+        {
+            Application.MainLoop.Invoke(() =>
+            {
+                this.improveWealth.Enabled = canExchange;
+            });
+        }
+
         public void OnStatsRefresh(int military, int resources, int wealth, int year, int vp)
         {
             Application.MainLoop.Invoke(() => {
@@ -109,7 +127,7 @@ namespace StarEmpire
             });
         }
 
-        public void OnTechView(List<ITech> owned, List<ITech> available)
+        public void OnTechView(List<ITech> available)
         {
             Application.MainLoop.Invoke(() =>
             {

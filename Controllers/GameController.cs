@@ -14,8 +14,11 @@ namespace StarEmpire
         public Action<List<IStarSystem>> StarMap { get; set; }
         public Action<bool> AllowMilitaryImprovement { get; set; }
         public Action<bool> AllowTechImprovement { get; set; }
-        public Action<List<ITech>, List<ITech>> Techs { get; set; }
+        public Action<bool> AllowResourcesExchange { get; set; }
+        public Action<bool> AllowWealthExchange { get; set; }
+        public Action<List<ITech>> Techs { get; set; }
         public bool fleetResupply { get; set; } = false;
+        public bool diplomacyAvailable { get; set; } = false;
 
         public GameController(Game gameModel)
         {
@@ -29,11 +32,23 @@ namespace StarEmpire
 
         public void ShowTech()
         {
-            Techs(_game.Player.OwnedTechs, TechFactory.TechTemplateList.Where(o => o.RequiresYear <= _game.Player.Year && _game.Player.OwnedTechs.Exists(p => p.Name == o.Name) == false).ToList());
+            Techs(TechFactory.TechTemplateList.Where(o => o.RequiresYear <= _game.Player.Year && _game.Player.OwnedTechs.Exists(p => p.Name == o.Name) == false).ToList());
         }
 
         public void ExploreOrInvade(IStarSystem star)
         {
+            if (diplomacyAvailable)
+            {
+                int diplomaticJoin = MessageBox.Query("Exploration", $"Your Highness, do you want to join new star system?", "Yes", "No");
+                if (diplomaticJoin != 0) return;
+                MessageBox.Query("Invasion", $"Your Highness, star system {star.Name} joined our Empire.", "Ok");
+                star.Owner = _game.Player;
+                _game.Player.ConqueredSystems.Add(star);
+                diplomacyAvailable = false;
+                Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+                ShowStarMap();
+                return;
+            }
             if (fleetResupply)
             {
                 MessageBox.ErrorQuery("Information", "Your Highness, our fleet is underway replenishment.", "Ok");
@@ -103,10 +118,10 @@ namespace StarEmpire
             if (_game.Player.Wealth < technology.Cost) MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok");
             _game.Player.Wealth -= technology.Cost;
             _game.Player.OwnedTechs.Add(technology);
+            if (technology.Name == Context.InterstellarDiplomacy) diplomacyAvailable = true;
             Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
             AllowTechImprovement(false);
         }
-
 
         public void EndTurn()
         {
@@ -114,19 +129,32 @@ namespace StarEmpire
             CollectResources();
             AllowMilitaryImprovement(true);
             AllowTechImprovement(true);
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce))
+            {
+                AllowResourcesExchange(true);
+                AllowWealthExchange(true);
+            }
             fleetResupply = false;
         }
 
-
-
         public void ExchangeResources()
         {
-            throw new NotImplementedException();
+            if (_game.Player.Wealth < 2) MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok");
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange wealth", "Ok");
+            _game.Player.Wealth -= 2;
+            _game.Player.Resources++;
+            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            AllowResourcesExchange(false);
         }
 
         public void ExchangeWealth()
         {
-            throw new NotImplementedException();
+            if (_game.Player.Resources < 2) MessageBox.ErrorQuery("", "Your Highness, we do not have enough resources", "Ok");
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange resources", "Ok");
+            _game.Player.Resources -= 2;
+            _game.Player.Wealth++;
+            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            AllowWealthExchange(false);
         }
 
         public void IncidentOccured()
