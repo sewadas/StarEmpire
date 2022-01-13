@@ -11,5 +11,7 @@ namespace StarEmpire
         public string Name { get; set; }
         public int Cost { get; set; }
         public int RequiresYear { get; set; }
+        public override string ToString() => $"{Name} [ -{Cost} Wealth]";
+        public string Description { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace StarEmpire
         public static List<IStarSystem> Build()
         {
             int i = 10;
-            var tmp = SystemTemplateList.ToArray().OrderBy(c => Guid.NewGuid()).ToList();
+            var tmp = SystemTemplateList.ToArray().OrderByDescending(p => p.Distance).ThenBy(c => Guid.NewGuid()).ToList();
             foreach (var star in tmp)
             {
                 star.LocationX = new Random().Next(0, Context.ScreenWidth - star.Name.Length - 2);

@@ -11,5 +11,6 @@ namespace StarEmpire
         string Name { get; }
         int Cost { get; }
         int RequiresYear { get; }
+        string Description { get; }
     }
 }

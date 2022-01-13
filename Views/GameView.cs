@@ -30,6 +30,7 @@ namespace StarEmpire
             _gameController.Stats = OnStatsRefresh;
             _gameController.StarMap = OnStarMapRefresh;
             _gameController.AllowMilitaryImprovement = OnMilitaryImprovement;
+            _gameController.AllowTechImprovement = OnTechImprovement;
             _gameController.Techs = OnTechView;
             Height = Dim.Fill();
             Width = Dim.Fill();
@@ -63,6 +64,13 @@ namespace StarEmpire
         {
             Application.MainLoop.Invoke(() => {
                 this.improveMilitary.Enabled = canImprove;
+            });
+        }
+
+        public void OnTechImprovement(bool canImprove)
+        {
+            Application.MainLoop.Invoke(() => {
+                this.tech.Enabled = canImprove;
             });
         }
 
@@ -106,7 +114,18 @@ namespace StarEmpire
             Application.MainLoop.Invoke(() =>
             {
                 var dialog = new Dialog() { X = Pos.Center(), Y = Pos.Center() };
-                dialog.AddButton(new Button("OK"));
+                var info = new Label() { Y = 12, X = Pos.Center(), Width = 30 };
+                var techs = new ListView(available) { Height = 12, Width = 50 } ;
+                techs.SelectedItemChanged += f => info.Text = ((ITech)f.Value).Description;
+
+                var cancel = new Button("Cancel");
+                cancel.Clicked += () => Remove(dialog);
+                var buy = new Button("Buy");
+                buy.Clicked += () => { _gameController.DiscoverTechnology(available[techs.SelectedItem]); Remove(dialog); };
+                dialog.Add(techs);
+                dialog.Add(info);
+                dialog.AddButton(buy);
+                dialog.AddButton(cancel);
                 Add(dialog);
             });
         }

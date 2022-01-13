@@ -13,6 +13,7 @@ namespace StarEmpire
         public Action<int, int, int, int, int> Stats { get; set; }
         public Action<List<IStarSystem>> StarMap { get; set; }
         public Action<bool> AllowMilitaryImprovement { get; set; }
+        public Action<bool> AllowTechImprovement { get; set; }
         public Action<List<ITech>, List<ITech>> Techs { get; set; }
         public bool fleetResupply { get; set; } = false;
 
@@ -28,14 +29,14 @@ namespace StarEmpire
 
         public void ShowTech()
         {
-            Techs(_game.Player.OwnedTechs, TechFactory.TechTemplateList);
+            Techs(_game.Player.OwnedTechs, TechFactory.TechTemplateList.Where(o => o.RequiresYear <= _game.Player.Year && _game.Player.OwnedTechs.Exists(p => p.Name == o.Name) == false).ToList());
         }
 
         public void ExploreOrInvade(IStarSystem star)
         {
             if (fleetResupply)
             {
-                MessageBox.ErrorQuery("Information", "Cannot invade, fleet resupply.", "Ok");
+                MessageBox.ErrorQuery("Information", "Your Highness, our fleet is underway replenishment.", "Ok");
                 return;
             }
 
@@ -46,27 +47,27 @@ namespace StarEmpire
             }
 
             int res;
-            if (star.IsExplored) res = MessageBox.Query("Invasion", $"Do you want to invade {star.Name}? {Environment.NewLine} Resistance: {star.Resistance} Resources: {star.ResourceRate} Wealth: {star.WealthRate} VP: {star.VictoryPoints}", "Yes", "No");
-            else res = MessageBox.Query("Exploration", $"Do you want to explore new star?", "Yes", "No");
+            if (star.IsExplored) res = MessageBox.Query("Invasion", $"Your Highness, do you want to invade {star.Name}? {Environment.NewLine} Resistance: {star.Resistance} Resources: {star.ResourceRate} Wealth: {star.WealthRate} VP: {star.VictoryPoints}", "Yes", "No");
+            else res = MessageBox.Query("Exploration", $"Your Highness, do you want to explore new star system?", "Yes", "No");
 
             if (res != 0) return;
 
             var result = star.Invade(_game.Player);
             if (result == InvasionResult.NotPossible)
             {
-                MessageBox.ErrorQuery("Invasion", "Invasion not possible!", "Ok");
+                MessageBox.ErrorQuery("Invasion", "Your Highness, invasion is not possible!", "Ok");
                 return;
             }
 
             if (result == InvasionResult.Failure)
             {
-                MessageBox.Query("Invasion", $"Invasion on {star.Name} failed. Military -1.", "Ok");
+                MessageBox.Query("Invasion", $"Your Highness, invasion on {star.Name} has failed. Our fleet has been badly damaged.", "Ok");
                 _game.Player.Military--;
                 _game.Player.Military = Math.Max(_game.Player.Military, 0);
             }
             if (result == InvasionResult.Success)
             {
-                MessageBox.Query("Invasion", $"Invasion on {star.Name} succeeded.", "Ok");
+                MessageBox.Query("Invasion", $"Your Highness, invasion on {star.Name} has succeeded.", "Ok");
                 star.Owner = _game.Player;
                 _game.Player.ConqueredSystems.Add(star);
             }
@@ -86,9 +87,9 @@ namespace StarEmpire
 
         public void BuildMilitary()
         {
-            if (_game.Player.Resources <= 0) { MessageBox.ErrorQuery("", "Not enough resources", "Ok"); return; }
-            if (_game.Player.Wealth <= 0) { MessageBox.ErrorQuery("", "Not enough wealth", "Ok"); return; }
-            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.CapitalShips) == false && _game.Player.Military == 3) { MessageBox.ErrorQuery("", "Capital ship technology needed to increase above 3", "Ok"); return; }
+            if (_game.Player.Resources <= 0) { MessageBox.ErrorQuery("", "Your Highness, we do not have enough resources", "Ok"); return; }
+            if (_game.Player.Wealth <= 0) { MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok"); return; }
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.CapitalShips) == false && _game.Player.Military == 3) { MessageBox.ErrorQuery("", "Your Highness, we need capital ship technology needed to further improve our fleet", "Ok"); return; }
             _game.Player.Wealth--;
             _game.Player.Resources--;
             _game.Player.Military++;
@@ -99,8 +100,11 @@ namespace StarEmpire
 
         public void DiscoverTechnology(ITech technology)
         {
-            if (_game.Player.Wealth < technology.Cost) MessageBox.ErrorQuery("", "Not enough wealth");
+            if (_game.Player.Wealth < technology.Cost) MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok");
+            _game.Player.Wealth -= technology.Cost;
             _game.Player.OwnedTechs.Add(technology);
+            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            AllowTechImprovement(false);
         }
 
 
@@ -109,6 +113,7 @@ namespace StarEmpire
             IncidentOccured();
             CollectResources();
             AllowMilitaryImprovement(true);
+            AllowTechImprovement(true);
             fleetResupply = false;
         }
 
@@ -134,6 +139,7 @@ namespace StarEmpire
             var incident = _game.Incidents.Dequeue();
             MessageBox.Query("Incident", incident(_game.Player), "Ok");
             Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            ShowStarMap();
         }
     }
 }
