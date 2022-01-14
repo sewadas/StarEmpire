@@ -15,7 +15,17 @@ namespace StarEmpire
         public int Military { get; set; }
         public int Resources { get; set; }
         public int Wealth { get; set; }
-        public int Year { get; set; } = 1;
-        public int VictoryPoints { get { return ConqueredSystems.Sum(o => o.VictoryPoints); } }
+        public int Era { get; set; } = 1;
+        public int Turn { get; set; } = 1;
+        public int VictoryPoints 
+        { 
+            get 
+            {
+                return ConqueredSystems.Sum(o => o.VictoryPoints) +
+                    OwnedTechs.Count() +
+                    (OwnedTechs.Count() == TechFactory.TechTemplateList.Count() ? 1 : 0) +
+                    (ConqueredSystems.Count() == 10 ? 3 : 0);
+            } 
+        }
     }
 }

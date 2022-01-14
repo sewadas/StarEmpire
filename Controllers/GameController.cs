@@ -10,7 +10,7 @@ namespace StarEmpire
     public class GameController
     {
         private Game _game;
-        public Action<int, int, int, int, int> Stats { get; set; }
+        public Action<Empire> Stats { get; set; }
         public Action<List<IStarSystem>> StarMap { get; set; }
         public Action<bool> AllowMilitaryImprovement { get; set; }
         public Action<bool> AllowTechImprovement { get; set; }
@@ -32,7 +32,7 @@ namespace StarEmpire
 
         public void ShowTech()
         {
-            Techs(TechFactory.TechTemplateList.Where(o => o.RequiresYear <= _game.Player.Year && _game.Player.OwnedTechs.Exists(p => p.Name == o.Name) == false).ToList());
+            Techs(TechFactory.TechTemplateList.Where(o => o.RequiresYear <= _game.Player.Era && _game.Player.OwnedTechs.Exists(p => p.Name == o.Name) == false).ToList());
         }
 
         public void ExploreOrInvade(IStarSystem star)
@@ -45,19 +45,20 @@ namespace StarEmpire
                 star.Owner = _game.Player;
                 _game.Player.ConqueredSystems.Add(star);
                 diplomacyAvailable = false;
-                Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+                Stats(_game.Player);
                 ShowStarMap();
                 return;
             }
-            if (fleetResupply)
-            {
-                MessageBox.ErrorQuery("Information", "Your Highness, our fleet is underway replenishment.", "Ok");
-                return;
-            }
-
+            
             if (_game.Player.ConqueredSystems.Contains(star))
             {
                 MessageBox.Query("Information", $"{star.Name} {Environment.NewLine} Resistance: {star.Resistance} Resources: {star.ResourceRate} Wealth: {star.WealthRate} VP: {star.VictoryPoints}", "Ok");
+                return;
+            }
+
+            if (fleetResupply)
+            {
+                MessageBox.ErrorQuery("Information", "Your Highness, our fleet is underway replenishment.", "Ok");
                 return;
             }
 
@@ -86,7 +87,7 @@ namespace StarEmpire
                 star.Owner = _game.Player;
                 _game.Player.ConqueredSystems.Add(star);
             }
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             ShowStarMap();
             fleetResupply = true;
         }
@@ -97,7 +98,7 @@ namespace StarEmpire
             var systems = _game.Player.ConqueredSystems.ToList();
             systems.Add(_game.Player.Homeworld);
             systems.ForEach(o => o.AddResources());
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
         }
 
         public void BuildMilitary()
@@ -109,17 +110,17 @@ namespace StarEmpire
             _game.Player.Resources--;
             _game.Player.Military++;
             _game.Player.Military = Math.Min(_game.Player.Military, 5);
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             AllowMilitaryImprovement(false);
         }
 
         public void DiscoverTechnology(ITech technology)
         {
-            if (_game.Player.Wealth < technology.Cost) MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok");
+            if (_game.Player.Wealth < technology.Cost) { MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok"); return; }
             _game.Player.Wealth -= technology.Cost;
             _game.Player.OwnedTechs.Add(technology);
             if (technology.Name == Context.InterstellarDiplomacy) diplomacyAvailable = true;
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             AllowTechImprovement(false);
         }
 
@@ -135,25 +136,26 @@ namespace StarEmpire
                 AllowWealthExchange(true);
             }
             fleetResupply = false;
+            _game.Player.Turn++;
         }
 
         public void ExchangeResources()
         {
-            if (_game.Player.Wealth < 2) MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok");
-            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange wealth", "Ok");
+            if (_game.Player.Wealth < 2) { MessageBox.ErrorQuery("", "Your Highness, we do not have enough wealth", "Ok"); return; }
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) { MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange wealth", "Ok"); return; }
             _game.Player.Wealth -= 2;
             _game.Player.Resources++;
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             AllowResourcesExchange(false);
         }
 
         public void ExchangeWealth()
         {
-            if (_game.Player.Resources < 2) MessageBox.ErrorQuery("", "Your Highness, we do not have enough resources", "Ok");
-            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange resources", "Ok");
+            if (_game.Player.Resources < 2) { MessageBox.ErrorQuery("", "Your Highness, we do not have enough resources", "Ok"); return; }
+            if (_game.Player.OwnedTechs.Any(o => o.Name == Context.InterspeciesCommerce) == false) { MessageBox.ErrorQuery("", "Your Highness, we need interspecies commerce technology needed to exchange resources", "Ok"); return; }
             _game.Player.Resources -= 2;
             _game.Player.Wealth++;
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             AllowWealthExchange(false);
         }
 
@@ -162,11 +164,18 @@ namespace StarEmpire
             if (_game.Incidents.Any() == false)
             {
                 _game.Incidents = new Queue<Func<Empire, string>>(IncidentFactory.IncidentTemplateList.OrderBy(c => Guid.NewGuid()).ToList());
-                _game.Player.Year++;
+                _game.Player.Era++;
+                if (_game.Player.Era >= 3)
+                {
+                    Application.Top.RemoveAll();
+                    int res = MessageBox.Query("Victory!", $"Your score: {_game.Player.VictoryPoints}", "Ok");
+                    Application.Top.Add(new MenuView(new MenuController()));
+                    return;
+                }
             }
             var incident = _game.Incidents.Dequeue();
             MessageBox.Query("Incident", incident(_game.Player), "Ok");
-            Stats(_game.Player.Military, _game.Player.Resources, _game.Player.Wealth, _game.Player.Year, _game.Player.VictoryPoints);
+            Stats(_game.Player);
             ShowStarMap();
         }
     }

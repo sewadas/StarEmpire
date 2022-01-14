@@ -17,7 +17,7 @@ namespace StarEmpire
             {
                 if (e.ConqueredSystems.Any() == false) return "Your Highness, there is nothing to report.";
                 var sys = e.ConqueredSystems.OrderBy(o => o.Resistance).First();
-                var result = sys.Invade(EmpireFactory.Build(Context.Revolt, Math.Min((int)(e.Year * 1.5), 3)));
+                var result = sys.Invade(EmpireFactory.Build(Context.Revolt, Math.Min((int)(e.Era * 1.5), 3)));
                 if (result == InvasionResult.Failure) return $"Your Highness, there was large revolt on: {sys.Name}. Our troops sucessfully crushed the rebels.";
                 else
                 {
@@ -30,7 +30,7 @@ namespace StarEmpire
             {
                 if (e.ConqueredSystems.Any() == false) return "Your Highness, there is nothing to report.";
                 var sys = e.ConqueredSystems.Last();
-                var result = sys.Invade(EmpireFactory.Build(Context.Invasion, Math.Min(e.Year, 2)));
+                var result = sys.Invade(EmpireFactory.Build(Context.Invasion, Math.Min(e.Era, 2)));
                 if (result == InvasionResult.Failure) return $"Your Highness, there was enemy empire invasion on: {sys.Name}. Our troops sucessfully crushed the invasion fleet.";
                 else
                 {
@@ -44,7 +44,7 @@ namespace StarEmpire
             {
                 if (e.ConqueredSystems.Any() == false) return "Your Highness, there is nothing to report.";
                 var sys = e.ConqueredSystems.Last();
-                var result = sys.Invade(EmpireFactory.Build(Context.Invasion, Math.Min(e.Year, 3)));
+                var result = sys.Invade(EmpireFactory.Build(Context.Invasion, Math.Min(e.Era, 3)));
                 if (result == InvasionResult.Failure) return $"Your Highness, there was large invasion of enemy empire on:  {sys.Name}. Our troops successfully crushed the invasion fleet.";
                 else
                 {
@@ -57,7 +57,7 @@ namespace StarEmpire
             {
                 if (e.ConqueredSystems.Any() == false) return "Your Highness, there is nothing to report.";
                 var sys = e.ConqueredSystems.OrderBy(o => o.Resistance).First();
-                var result = sys.Invade(EmpireFactory.Build(Context.Revolt, Math.Min(e.Year, 2)));
+                var result = sys.Invade(EmpireFactory.Build(Context.Revolt, Math.Min(e.Era, 2)));
                 if (result == InvasionResult.Failure) return $"Your Highness, there was revolt on: {sys.Name}. Our troops sucessfully crushed the rebels.";
                 else
                 {

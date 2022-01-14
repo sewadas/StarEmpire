@@ -46,9 +46,8 @@ namespace StarEmpire
             wealth = new Label($"Wealth: {0}") { X = 1, Y = Pos.Bottom(resources), Width = 12, Height = 1 };
             improveWealth = new Button("+1") { X = Pos.Right(wealth) + 1, Y = Pos.Bottom(resources), Width = 6, Height = 1, Enabled = false };
             improveWealth.Clicked += _gameController.ExchangeWealth;
-            year = new Label($"Year: {1}") { X = 1, Y = Pos.Bottom(wealth), Width = 12, Height = 1 };
+            year = new Label($"Era: {1} Turn: {1}") { X = 1, Y = Pos.Bottom(wealth), Width = 12, Height = 1 };
             vp = new Label($"VP:  {0}") { X = 1, Y = Pos.Bottom(year), Width = 12, Height = 1 };
-
 
             endTurn = new Button("END TURN") { X = Pos.Right(improveMilitary) + 2, Y = 1, Width = 12, Height = 1 };
             endTurn.Clicked += _gameController.EndTurn;
@@ -64,14 +63,16 @@ namespace StarEmpire
 
         public void OnMilitaryImprovement(bool canImprove)
         {
-            Application.MainLoop.Invoke(() => {
+            Application.MainLoop.Invoke(() => 
+            {
                 this.improveMilitary.Enabled = canImprove;
             });
         }
 
         public void OnTechImprovement(bool canImprove)
         {
-            Application.MainLoop.Invoke(() => {
+            Application.MainLoop.Invoke(() => 
+            {
                 this.tech.Enabled = canImprove;
             });
         }
@@ -92,14 +93,15 @@ namespace StarEmpire
             });
         }
 
-        public void OnStatsRefresh(int military, int resources, int wealth, int year, int vp)
+        public void OnStatsRefresh(Empire empire)
         {
-            Application.MainLoop.Invoke(() => {
-                this.military.Text = $"Military: {military}";
-                this.resources.Text = $"Resources: {resources}";
-                this.wealth.Text = $"Wealth: {wealth}";
-                this.year.Text = $"Year: {year}";
-                this.vp.Text = $"VP: {vp}";
+            Application.MainLoop.Invoke(() =>
+            {
+                this.military.Text = $"Military: {empire.Military}";
+                this.resources.Text = $"Resources: {empire.Resources}";
+                this.wealth.Text = $"Wealth: {empire.Wealth}";
+                this.year.Text = $"Era: {empire.Era} Turn: {empire.Turn}";
+                this.vp.Text = $"VP: {empire.VictoryPoints}";
             });
         }
 
@@ -116,11 +118,11 @@ namespace StarEmpire
 
                     Pos x = star.LocationX;
                     Pos y = star.LocationY;
-                    var system = new Label() { X = x, Y = y, Text = $"* {(star.IsExplored || star.IsHomeworld ? star.Name : string.Empty)}", Data = star, Width = star.Name.Length +2, Height = 1 };
+                    var system = new Label() { X = x, Y = y, Text = $"* {(star.IsExplored || star.IsHomeworld ? star.Name : string.Empty)}", Data = star, Width = star.Name.Length + 2, Height = 1 };
                     if (star.IsHomeworld) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Green) };
-                    if (star.Owner == null) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Red) };
-                    if (star.IsExplored == false) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Gray) };
-                    if (star.Distance == DistanceEnum.Distant) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Blue) };
+                    if (star.Owner == null) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Red), Focus = new Terminal.Gui.Attribute(Color.BrightGreen) };
+                    if (star.IsExplored == false) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.Gray), Focus = new Terminal.Gui.Attribute(Color.BrightGreen) };
+                    if (star.Distance == DistanceEnum.Distant) system.ColorScheme = new ColorScheme() { Normal = new Terminal.Gui.Attribute(Color.DarkGray), Focus = new Terminal.Gui.Attribute(Color.BrightGreen) };
                     system.Clicked += () => _gameController.ExploreOrInvade(star);
                     starMap.Add(system);
                 }
