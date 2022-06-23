@@ -42,18 +42,21 @@ namespace StarEmpire
             return star;
         }
 
-        private static List<IStarSystem> SystemTemplateList = new List<IStarSystem>
+        private static List<IStarSystem> SystemTemplateList
         {
-            Build(null, "Wolf 359", DistanceEnum.Near, 1, 0, 5, 1),
-            Build(null, "Proxima", DistanceEnum.Near, 1, 0, 6, 1),
-            Build(null, "Epsilon Eridani", DistanceEnum.Near, 0, 0, 8, 1),
-            Build(null, "Cygnus", DistanceEnum.Near, 0, 1, 5, 1),
-            Build(null, "Tau Ceti", DistanceEnum.Near, 0, 0, 4, 1),
-            Build(null, "Procyon", DistanceEnum.Near, 0, 1, 7, 1),
-            Build(null, "Sirius", DistanceEnum.Near, 0, 0, 6, 1),
-            Build(null, "Canopus", DistanceEnum.Distant, 0, 1, 9, 2),
-            Build(null, "Polaris", DistanceEnum.Distant, 1, 0, 9, 2),
-            Build(null, "Alpha Centauri", DistanceEnum.Distant, 0, 0, 10, 3)
-        };
+            get => new List<IStarSystem>()
+            {
+                Build(null, "Wolf 359", DistanceEnum.Near, 1, 0, 5, 1),
+                Build(null, "Proxima", DistanceEnum.Near, 1, 0, 6, 1),
+                Build(null, "Epsilon Eridani", DistanceEnum.Near, 0, 0, 8, 1),
+                Build(null, "Cygnus", DistanceEnum.Near, 0, 1, 5, 1),
+                Build(null, "Tau Ceti", DistanceEnum.Near, 0, 0, 4, 1),
+                Build(null, "Procyon", DistanceEnum.Near, 0, 1, 7, 1),
+                Build(null, "Sirius", DistanceEnum.Near, 0, 0, 6, 1),
+                Build(null, "Canopus", DistanceEnum.Distant, 0, 1, 9, 2),
+                Build(null, "Polaris", DistanceEnum.Distant, 1, 0, 9, 2),
+                Build(null, "Alpha Centauri", DistanceEnum.Distant, 0, 0, 10, 3)
+            };
+        }
     }
 }
